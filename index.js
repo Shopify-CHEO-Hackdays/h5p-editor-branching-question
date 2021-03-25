@@ -72,12 +72,14 @@ H5PEditor.BranchingQuestion = (function ($, EventDispatcher, Branch) {
           break;
         }
       }
-
-      var list = this.children[listIndex];
-      list.on('addedItem', function () {
-        this.replaceContentIdWithSelector(addHtmlCallback);
-        this.addFeedbackGroupDescription();
-      }.bind(this));
+      
+      console.log(this.field)
+      console.log(this.children)
+      // var list = this.children[listIndex];
+      // list.on('addedItem', function () {
+      //   this.replaceContentIdWithSelector(addHtmlCallback);
+      //   this.addFeedbackGroupDescription();
+      // }.bind(this));
 
       this.replaceContentIdWithSelector(addHtmlCallback);
       this.addFeedbackGroupDescription();
@@ -128,8 +130,7 @@ H5PEditor.BranchingQuestion = (function ($, EventDispatcher, Branch) {
         if (nextContentId.style.display === 'none') {
           // Already handled, update DOM
           selectorWrapper = nextContentId.parentNode.querySelector('.h5p-next-branch-wrapper');
-        }
-        else {
+        } else {
           // Hide next content id fields
           nextContentId.style.display = 'none';
 
@@ -154,8 +155,10 @@ H5PEditor.BranchingQuestion = (function ($, EventDispatcher, Branch) {
      */
     const findList = function (path) {
       for (let i = 0; i < self.children.length; i++) {
-        if (self.children[i].getName && self.children[i].getName() === path) {
-          return self.children[i];
+        console.log('children:', children);
+
+        if (self.children[i].field.fields[0].getName && self.children[i].field.fields[0].getName() === path) {
+          return self.children[i].fields[0];
         }
       }
     };

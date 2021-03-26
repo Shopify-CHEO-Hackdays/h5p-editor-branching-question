@@ -65,22 +65,24 @@ H5PEditor.BranchingQuestion = (function ($, EventDispatcher, Branch) {
      * @param addHtmlCallback
      */
     this.setAlternatives = function (addHtmlCallback) {
-      var listIndex;
       for (let i = 0; i < this.field.fields.length; i++) {
         if (this.field.fields[i].name === 'alternatives') {
-          listIndex = i;
-          break;
+          var list = this.children[i].child;
+          var label = this.children[i].field.label
+          var parent = Array.from(this.$editor[0].querySelectorAll('.h5peditor-label')).find(elem => elem.innerText == label).parentElement
+          
+          list.on('addedItem', function () {
+            this.replaceContentIdWithSelector(parent, list, addHtmlCallback);
+            this.addFeedbackGroupDescription();
+          }.bind(this));
+
+          this.addFeedbackGroupDescription();
+          // need to wait for feedback group to be added
+          setTimeout(() => {
+            this.replaceContentIdWithSelector(parent, list, addHtmlCallback);
+          }, 1)
         }
       }
-
-      var list = this.children[listIndex];
-      list.on('addedItem', function () {
-        this.replaceContentIdWithSelector(addHtmlCallback);
-        this.addFeedbackGroupDescription();
-      }.bind(this));
-
-      this.replaceContentIdWithSelector(addHtmlCallback);
-      this.addFeedbackGroupDescription();
     };
 
     /**
@@ -118,8 +120,8 @@ H5PEditor.BranchingQuestion = (function ($, EventDispatcher, Branch) {
      *
      * @param addHtmlCallback
      */
-    this.replaceContentIdWithSelector = function (addHtmlCallback) {
-      var nextContentIds = this.$editor[0].querySelectorAll('.field-name-nextContentId');
+    this.replaceContentIdWithSelector = function (parent, list, addHtmlCallback) {
+      var nextContentIds = parent.querySelectorAll('.field-name-nextContentId');
       for (var i = 0; i < nextContentIds.length; i++) {
 
         var nextContentId = nextContentIds[i];
@@ -137,12 +139,10 @@ H5PEditor.BranchingQuestion = (function ($, EventDispatcher, Branch) {
           selectorWrapper.classList.add('h5p-next-branch-wrapper');
           nextContentId.parentNode.insertBefore(selectorWrapper, nextContentId);
         }
-
-        findList('alternatives').forEachChild(function (child, index) {
-          if (index === i) {
-            addHtmlCallback(i, selectorWrapper, H5PEditor.findField('feedback', child));
-          }
-        });
+        
+        list.forEachChild(function (child, _) {
+          addHtmlCallback(i, selectorWrapper, H5PEditor.findField('feedback', child));
+        })
       }
     };
 
@@ -150,14 +150,16 @@ H5PEditor.BranchingQuestion = (function ($, EventDispatcher, Branch) {
      * A small helper for finding list widgets.
      *
      * @param {string} path
-     * @return {Object}
+     * @return Array[{Object}]
      */
-    const findList = function (path) {
+    const findListsWithName = function (path) {
+      let lists = []
       for (let i = 0; i < self.children.length; i++) {
-        if (self.children[i].getName && self.children[i].getName() === path) {
-          return self.children[i];
+        if (self.children[i].field && self.children[i].field.name === path) {
+          lists.push(self.children[i]);
         }
       }
+      return lists
     };
 
     /**
